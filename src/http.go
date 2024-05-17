@@ -30,7 +30,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func StartServer() {
+func StartServerHTTP() {
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/", handler)
 	err := http.ListenAndServeTLS(":8080", "cert.pem", "key.pem", nil)

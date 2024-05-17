@@ -19,7 +19,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	w.WriteMsg(&msg)
 }
 
-func StartServer() {
+func StartServerDNS() {
 	dns.HandleFunc("example.com.", handleDNSRequest)
 
 	server := &dns.Server{Addr: ":53", Net: "udp"}

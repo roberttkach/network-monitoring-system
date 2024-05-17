@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func handleClient(conn net.Conn) {
+func handleClientTCP(conn net.Conn) {
 	var buf [512]byte
 
 	_, err := conn.Read(buf[0:])
@@ -22,26 +22,26 @@ func handleClient(conn net.Conn) {
 	conn.Close()
 }
 
-func checkError(err error) {
+func checkErrorTCP(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error ", err.Error())
 		os.Exit(1)
 	}
 }
 
-func startServer() {
+func StartServerTCP() {
 	service := ":1200"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
-	checkError(err)
+	checkErrorTCP(err)
 
 	listener, err := net.ListenTCP("tcp", tcpAddr)
-	checkError(err)
+	checkErrorTCP(err)
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			continue
 		}
-		go handleClient(conn)
+		go handleClientTCP(conn)
 	}
 }
