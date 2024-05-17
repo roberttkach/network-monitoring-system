@@ -10,20 +10,24 @@ import (
 func handleClient(conn *net.UDPConn) {
 	var buf [512]byte
 
-	_, addr, err := conn.ReadFromUDP(buf[0:])
+	n, addr, err := conn.ReadFromUDP(buf[0:])
 	if err != nil {
+		checkError(err)
 		return
 	}
 
-	fmt.Println("Received ", string(buf[0:]))
+	fmt.Println("Received ", string(buf[:n]))
 
 	daytime := time.Now().String()
-	conn.WriteToUDP([]byte(daytime), addr)
+	_, err = conn.WriteToUDP([]byte(daytime), addr)
+	if err != nil {
+		checkError(err)
+	}
 }
 
 func checkError(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error ", err.Error())
+		fmt.Fprintf(os.Stderr, "Fatal error: %v", err.Error())
 		os.Exit(1)
 	}
 }
