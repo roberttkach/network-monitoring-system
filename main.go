@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	go src.StartServer()
+	go src.StartServerHTTP()
 	go src.CheckOpenPorts()
 
 	http.Handle("/metrics", promhttp.Handler())
