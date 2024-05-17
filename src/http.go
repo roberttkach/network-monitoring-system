@@ -22,7 +22,7 @@ func init() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	requests.Inc() // Увеличиваем счетчик запросов.
+	requests.Inc()
 	_, err := fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
 	if err != nil {
 		http.Error(w, "Ошибка при форматировании ответа", http.StatusInternalServerError)
@@ -31,7 +31,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartServer() {
-	http.Handle("/metrics", promhttp.Handler()) // Экспонируем метрики на /metrics.
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/", handler)
 	err := http.ListenAndServeTLS(":8080", "cert.pem", "key.pem", nil)
 	if err != nil {
