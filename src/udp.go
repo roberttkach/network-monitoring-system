@@ -28,7 +28,7 @@ func checkError(err error) {
 	}
 }
 
-func startServer() {
+func StartServer() {
 	service := ":1200"
 	udpAddr, err := net.ResolveUDPAddr("udp4", service)
 	checkError(err)
