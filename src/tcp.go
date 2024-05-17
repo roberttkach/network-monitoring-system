@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-func handleClient(conn *net.UDPConn) {
+func handleClient(conn net.Conn) {
 	var buf [512]byte
 
-	_, addr, err := conn.ReadFromUDP(buf[0:])
+	_, err := conn.Read(buf[0:])
 	if err != nil {
 		return
 	}
@@ -18,7 +18,8 @@ func handleClient(conn *net.UDPConn) {
 	fmt.Println("Received ", string(buf[0:]))
 
 	daytime := time.Now().String()
-	conn.WriteToUDP([]byte(daytime), addr)
+	conn.Write([]byte(daytime))
+	conn.Close()
 }
 
 func checkError(err error) {
@@ -30,13 +31,17 @@ func checkError(err error) {
 
 func startServer() {
 	service := ":1200"
-	udpAddr, err := net.ResolveUDPAddr("udp4", service)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
 	checkError(err)
 
-	conn, err := net.ListenUDP("udp", udpAddr)
+	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
 	for {
-		handleClient(conn)
+		conn, err := listener.Accept()
+		if err != nil {
+			continue
+		}
+		go handleClient(conn)
 	}
 }
