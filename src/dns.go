@@ -2,17 +2,10 @@ package src
 
 import (
 	"github.com/miekg/dns"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net"
-	"net/http"
 	"time"
 )
-
-func init() {
-	prometheus.MustRegister(httpRequestsTotal, httpRequestsError, TotalRequests, requestLatency)
-}
 
 func recordMetrics() {
 	go func() {
@@ -38,18 +31,21 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	w.WriteMsg(&msg)
 
 	TotalRequests.Inc()     // Увеличиваем счетчик на 1
-	httpRequestsTotal.Inc() // Увеличиваем счетчик общего количества запросов
+	HttpRequestsTotal.Inc() // Увеличиваем счетчик общего количества запросов
 
 	elapsed := time.Since(start)              // Вычисляем время обработки запроса
-	requestLatency.Observe(elapsed.Seconds()) // Добавляем значение в гистограмму задержек
+	RequestLatency.Observe(elapsed.Seconds()) // Добавляем значение в гистограмму задержек
 }
 
 func StartServerDNS() {
 	recordMetrics()
 
+	// Удаляем регистрацию сборщиков метрик
+	// prometheus.MustRegister(HttpRequestsTotal, HttpRequestsError, TotalRequests, RequestLatency)
+
 	dns.HandleFunc("example.com.", handleDNSRequest)
 
-	server := &dns.Server{Addr: ":53", Net: "udp"}
+	server := &dns.Server{Addr: ":55", Net: "udp"}
 	log.Printf("Starting at %s\n", server.Addr)
 
 	err := server.ListenAndServe()
@@ -57,11 +53,6 @@ func StartServerDNS() {
 
 	if err != nil {
 		log.Fatalf("Failed to start server: %s\n ", err.Error())
-		httpRequestsError.Inc() // Увеличиваем счетчик ошибок
+		// HttpRequestError.Inc() // Увеличиваем счетчик ошибок
 	}
-}
-
-func StartMetricsServer() {
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
 }

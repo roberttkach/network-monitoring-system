@@ -1,17 +1,20 @@
 package main
 
 import (
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	"network-monitoring-system/src"
-
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
+	// Register metrics collectors
 	go src.StartServerHTTP()
 	go src.CheckOpenPorts()
+	go src.StartServerUDP()
+	go src.StartServerDNS()
+	go src.StartServerTCP()
 
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":9080", nil))
 }

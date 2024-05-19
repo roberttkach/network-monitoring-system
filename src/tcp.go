@@ -2,15 +2,11 @@ package src
 
 import (
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
 	"net"
+
 	"os"
 	"time"
 )
-
-func init() {
-	prometheus.MustRegister(httpRequestsTotal, httpRequestsError, TotalRequests, portChecks, requestLatency)
-}
 
 func handleClientTCP(conn net.Conn) {
 	var buf [512]byte
@@ -19,7 +15,7 @@ func handleClientTCP(conn net.Conn) {
 
 	_, err := conn.Read(buf[0:])
 	if err != nil {
-		httpRequestsError.Inc() // Увеличиваем счетчик ошибок
+		HttpRequestsError.Inc() // Увеличиваем счетчик ошибок
 		return
 	}
 
@@ -31,10 +27,10 @@ func handleClientTCP(conn net.Conn) {
 
 	// Увеличиваем счетчик на 1
 	TotalRequests.Inc()
-	httpRequestsTotal.Inc() // Увеличиваем счетчик общего количества запросов
+	HttpRequestsTotal.Inc() // Увеличиваем счетчик общего количества запросов
 
 	elapsed := time.Since(start)              // Вычисляем время обработки запроса
-	requestLatency.Observe(elapsed.Seconds()) // Добавляем значение в гистограмму задержек
+	RequestLatency.Observe(elapsed.Seconds()) // Добавляем значение в гистограмму задержек
 }
 
 func checkErrorTCP(err error) {
