@@ -39,7 +39,7 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "request_latency_seconds",
 			Help:    "Histogram of the request latency.",
-			Buckets: prometheus.LinearBuckets(0.01, 0.01, 10), // 10 buckets, each 0.01 seconds wide.
+			Buckets: prometheus.LinearBuckets(0.01, 0.01, 10),
 		},
 	)
 )

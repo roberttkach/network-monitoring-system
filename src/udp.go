@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"net"
 
-	"os"
 	"time"
 )
 
-func handleClient(conn *net.UDPConn) {
+func HandleClient(conn *net.UDPConn) {
 	var buf [512]byte
 
-	start := time.Now() // Запоминаем время начала обработки запроса
+	start := time.Now()
 
 	n, addr, err := conn.ReadFromUDP(buf[0:])
 	if err != nil {
-		HttpRequestsError.Inc() // Увеличиваем счетчик ошибок
-		checkError(err)
+		HttpRequestsError.Inc()
+		CheckError(err)
 		return
 	}
 
@@ -25,33 +24,30 @@ func handleClient(conn *net.UDPConn) {
 	daytime := time.Now().String()
 	_, err = conn.WriteToUDP([]byte(daytime), addr)
 	if err != nil {
-		checkError(err)
+		CheckError(err)
 	}
 
-	// Увеличиваем счетчик на 1
 	TotalRequests.Inc()
-	HttpRequestsTotal.Inc() // Увеличиваем счетчик общего количества запросов
+	HttpRequestsTotal.Inc()
 
-	elapsed := time.Since(start)              // Вычисляем время обработки запроса
-	RequestLatency.Observe(elapsed.Seconds()) // Добавляем значение в гистограмму задержек
+	elapsed := time.Since(start)
+	RequestLatency.Observe(elapsed.Seconds())
 }
 
-func checkError(err error) {
+func CheckError(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %v", err.Error())
-		os.Exit(1)
+		panic(fmt.Sprintf("Fatal error: %v", err.Error()))
 	}
 }
-
 func StartServerUDP() {
 	service := ":1200"
 	udpAddr, err := net.ResolveUDPAddr("udp4", service)
-	checkError(err)
+	CheckError(err)
 
 	conn, err := net.ListenUDP("udp", udpAddr)
-	checkError(err)
+	CheckError(err)
 
 	for {
-		handleClient(conn)
+		HandleClient(conn)
 	}
 }

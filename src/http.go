@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	start := time.Now() // Запоминаем время начала обработки запроса
+func Handler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
 
 	HttpRequestsTotal.Inc()
 	_, err := fmt.Fprintf(w, "Hello %s!", r.URL.Path[1:])
@@ -18,15 +18,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	elapsed := time.Since(start)              // Вычисляем время обработки запроса
-	RequestLatency.Observe(elapsed.Seconds()) // Добавляем значение в гистограмму задержек
+	elapsed := time.Since(start)
+	RequestLatency.Observe(elapsed.Seconds())
 }
 
 func StartServerHTTP() {
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", Handler)
 	err := http.ListenAndServe(":9090", nil)
 	if err != nil {
 		log.Fatalf("Ошибка при запуске сервера: %v", err)
-		HttpRequestsError.Inc() // Увеличиваем счетчик ошибок
+		HttpRequestsError.Inc()
 	}
 }

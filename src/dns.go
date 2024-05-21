@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func recordMetrics() {
+func RecordMetrics() {
 	go func() {
 		for {
 			TotalRequests.Inc()
@@ -16,8 +16,8 @@ func recordMetrics() {
 	}()
 }
 
-func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
-	start := time.Now() // Запоминаем время начала обработки запроса
+func HandleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
+	start := time.Now()
 
 	msg := dns.Msg{}
 	msg.SetReply(r)
@@ -30,20 +30,17 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	}
 	w.WriteMsg(&msg)
 
-	TotalRequests.Inc()     // Увеличиваем счетчик на 1
-	HttpRequestsTotal.Inc() // Увеличиваем счетчик общего количества запросов
+	TotalRequests.Inc()
+	HttpRequestsTotal.Inc()
 
-	elapsed := time.Since(start)              // Вычисляем время обработки запроса
-	RequestLatency.Observe(elapsed.Seconds()) // Добавляем значение в гистограмму задержек
+	elapsed := time.Since(start)
+	RequestLatency.Observe(elapsed.Seconds())
 }
 
 func StartServerDNS() {
-	recordMetrics()
+	RecordMetrics()
 
-	// Удаляем регистрацию сборщиков метрик
-	// prometheus.MustRegister(HttpRequestsTotal, HttpRequestsError, TotalRequests, RequestLatency)
-
-	dns.HandleFunc("example.com.", handleDNSRequest)
+	dns.HandleFunc("example.com.", HandleDNSRequest)
 
 	server := &dns.Server{Addr: ":55", Net: "udp"}
 	log.Printf("Starting at %s\n", server.Addr)
