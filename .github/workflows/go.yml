@@ -45,7 +45,8 @@ jobs:
         kubectl config set-credentials github-action --token=${{ secrets.KUBE_TOKEN }}
         kubectl config set-context default --cluster=my-cluster --user=github-action
         kubectl config use-context default
-        kubectl set image deployment/go-app-deployment go-app=${{ secrets.DOCKER_USERNAME }}/src:latest
-        kubectl set image deployment/grafana-deployment grafana=${{ secrets.DOCKER_USERNAME }}/grafana:latest
-        kubectl set image deployment/prometheus-deployment prometheus=${{ secrets.DOCKER_USERNAME }}/prometheus:latest
         kubectl apply -f kuber.yaml
+        kubectl rollout restart deployment/go-app-deployment
+        kubectl rollout restart deployment/grafana-deployment
+        kubectl rollout restart deployment/prometheus-deployment
+
