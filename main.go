@@ -10,7 +10,7 @@ import (
 func main() {
 	// Register metrics collectors
 	go src.StartServerHTTP()
-	go src.CheckOpenPorts()
+	go src.CheckOpenPorts("6060")
 	go src.StartServerUDP()
 	go src.StartServerDNS()
 	go src.StartServerTCP()
