@@ -1,0 +1,40 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build
+        run: go build -o go-app
+
+      - name: Build Docker image
+        run: docker build . -t go-app
+
+      - name: Push Docker image
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker push my-app
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl config set-cluster my-cluster --server=${{ secrets.KUBE_SERVER }} --certificate-authority=ca.crt
+          kubectl config set-credentials github-action --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context default --cluster=my-cluster --user=github-action
+          kubectl config use-context default
+          kubectl apply -f deployment.yaml
