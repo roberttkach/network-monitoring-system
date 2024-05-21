@@ -15,7 +15,7 @@ jobs:
 
     - name: Build and Push Docker image for src
       run: |
-        docker build -f Dockerfile1 -t src .
+        docker build -f Dockerfile -t src .
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker tag src:latest ${{ secrets.DOCKER_USERNAME }}/src:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/src:latest
