@@ -22,14 +22,14 @@ jobs:
 
     - name: Build and Push Docker image for grafana
       run: |
-        docker build -f grafana/Dockerfile -t grafana .
+        docker build -f grafana/Dockerfile -t grafana grafana/
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker tag grafana:latest ${{ secrets.DOCKER_USERNAME }}/grafana:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/grafana:latest
 
     - name: Build and Push Docker image for prometheus 
       run: |
-        docker build -f prometheus/Dockerfile -t prometheus .
+        docker build -f prometheus/Dockerfile -t prometheus prometheus/
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker tag prometheus:latest ${{ secrets.DOCKER_USERNAME }}/prometheus:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/prometheus:latest
@@ -48,4 +48,4 @@ jobs:
         kubectl set image deployment/go-app-deployment go-app=${{ secrets.DOCKER_USERNAME }}/src:latest
         kubectl set image deployment/grafana-deployment grafana=${{ secrets.DOCKER_USERNAME }}/grafana:latest
         kubectl set image deployment/prometheus-deployment prometheus=${{ secrets.DOCKER_USERNAME }}/prometheus:latest
-        kubectl apply -f deployment.yaml
+        kubectl apply -f kuber.yaml
