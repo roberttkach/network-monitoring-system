@@ -34,19 +34,4 @@ jobs:
         docker tag prometheus:latest ${{ secrets.DOCKER_USERNAME }}/prometheus:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/prometheus:latest
 
-    - name: Apply Kubernetes ConfigMap
-      run: |
-        kubectl create configmap prometheus-config --from-file=prometheus/prometheus.yaml
-        kubectl create configmap grafana-config --from-file=grafana/dashboards.yaml
-
-    - name: Deploy to Kubernetes
-      run: |
-        kubectl config set-cluster my-cluster --server=${{ secrets.KUBE_SERVER }} --certificate-authority=ca.crt
-        kubectl config set-credentials github-action --token=${{ secrets.KUBE_TOKEN }}
-        kubectl config set-context default --cluster=my-cluster --user=github-action
-        kubectl config use-context default
-        kubectl apply -f kuber.yaml
-        kubectl rollout restart deployment/go-app-deployment
-        kubectl rollout restart deployment/grafana-deployment
-        kubectl rollout restart deployment/prometheus-deployment
 
