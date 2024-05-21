@@ -2,36 +2,50 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.22
+    - name: Build and Push Docker image for src
+      run: |
+        docker build -f Dockerfile1 -t src .
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker tag src:latest ${{ secrets.DOCKER_USERNAME }}/src:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/src:latest
 
-      - name: Build
-        run: go build -o go-app
+    - name: Build and Push Docker image for grafana
+      run: |
+        docker build -f grafana/Dockerfile -t grafana .
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker tag grafana:latest ${{ secrets.DOCKER_USERNAME }}/grafana:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/grafana:latest
 
-      - name: Build Docker image
-        run: docker build . -t go-app
+    - name: Build and Push Docker image for prometheus 
+      run: |
+        docker build -f prometheus/Dockerfile -t prometheus .
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker tag prometheus:latest ${{ secrets.DOCKER_USERNAME }}/prometheus:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/prometheus:latest
 
-      - name: Push Docker image
-        run: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker push my-app
+    - name: Apply Kubernetes ConfigMap
+      run: |
+        kubectl create configmap prometheus-config --from-file=prometheus/prometheus.yaml
+        kubectl create configmap grafana-config --from-file=grafana/dashboards.yaml
 
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl config set-cluster my-cluster --server=${{ secrets.KUBE_SERVER }} --certificate-authority=ca.crt
-          kubectl config set-credentials github-action --token=${{ secrets.KUBE_TOKEN }}
-          kubectl config set-context default --cluster=my-cluster --user=github-action
-          kubectl config use-context default
-          kubectl apply -f deployment.yaml
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl config set-cluster my-cluster --server=${{ secrets.KUBE_SERVER }} --certificate-authority=ca.crt
+        kubectl config set-credentials github-action --token=${{ secrets.KUBE_TOKEN }}
+        kubectl config set-context default --cluster=my-cluster --user=github-action
+        kubectl config use-context default
+        kubectl set image deployment/go-app-deployment go-app=${{ secrets.DOCKER_USERNAME }}/src:latest
+        kubectl set image deployment/grafana-deployment grafana=${{ secrets.DOCKER_USERNAME }}/grafana:latest
+        kubectl set image deployment/prometheus-deployment prometheus=${{ secrets.DOCKER_USERNAME }}/prometheus:latest
+        kubectl apply -f deployment.yaml
