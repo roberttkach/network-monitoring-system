@@ -46,6 +46,3 @@ Additionally, there are Dockerfiles for building the Go application, Prometheus,
 
 5. Configure Grafana to connect to Prometheus and create dashboards for visualizing the collected metrics.
 
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
